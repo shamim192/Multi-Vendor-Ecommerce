@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Slider;
+use App\Traits\ImageUploadTrait;
 use Illuminate\Http\Request;
 
 class SliderController extends Controller
 {
+    use ImageUploadTrait;
     /**
      * Display a listing of the resource.
      */
@@ -28,7 +31,41 @@ class SliderController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'banner' => 'required|image|max:2000',
+            'type' => 'string|max:200',
+            'title' => 'required|max:200',
+            'starting_price' => 'max:200',
+            'btn_url' => 'url',
+            'serial' => 'required',
+            'status' => 'required',
+        ]);
+
+        // $slider = new Slider();
+
+        // $slider->type = $request->type;
+        // $slider->title = $request->title;
+        // $slider->starting_price = $request->starting_price;
+        // $slider->btn_url = $request->btn_url;
+        // $slider->serial = $request->serial;
+        // $slider->status = $request->status;
+        // $slider->save();
+        
+           $bannerPath = $this->uploadImage($request, 'banner', 'uploads');
+
+        Slider::create([
+            'banner' => $bannerPath,
+            'type' => $request->input('type'),
+            'title' => $request->input('title'),
+            'starting_price' => $request->input('starting_price'),
+            'btn_url' => $request->input('btn_url'),
+            'serial' => $request->input('serial'),
+            'status' => $request->input('status'),
+        ]);
+
+        toastr()->success('Slider was successfully stored!');
+
+        return redirect()->back();
     }
 
     /**
