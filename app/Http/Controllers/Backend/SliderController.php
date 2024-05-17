@@ -66,7 +66,7 @@ class SliderController extends Controller
 
         toastr()->success('Slider was successfully stored!');
 
-        return redirect()->action([self::class,'create']);
+        return redirect()->action([self::class,'index']);
     }
 
     /**
