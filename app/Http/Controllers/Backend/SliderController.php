@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\DataTables\SliderDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
 use App\Traits\ImageUploadTrait;
@@ -13,9 +14,9 @@ class SliderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(SliderDataTable $dataTable)
     {
-        return view('admin.slider.index');
+        return $dataTable->render('admin.slider.index');
     }
 
     /**
@@ -51,7 +52,7 @@ class SliderController extends Controller
         // $slider->status = $request->status;
         // $slider->save();
         
-           $bannerPath = $this->uploadImage($request, 'banner', 'uploads');
+        $bannerPath = $this->uploadImage($request, 'banner', 'uploads');
 
         Slider::create([
             'banner' => $bannerPath,
@@ -65,7 +66,7 @@ class SliderController extends Controller
 
         toastr()->success('Slider was successfully stored!');
 
-        return redirect()->back();
+        return redirect()->action([self::class,'create']);
     }
 
     /**
@@ -81,7 +82,9 @@ class SliderController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $slider = Slider::findOrFail($id);
+
+        return view('admin.slider.edit',compact('slider'));
     }
 
     /**
@@ -89,7 +92,33 @@ class SliderController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'banner' => 'nullable|image|max:2000',
+            'type' => 'string|max:200',
+            'title' => 'required|max:200',
+            'starting_price' => 'max:200',
+            'btn_url' => 'url',
+            'serial' => 'required',
+            'status' => 'required',
+        ]);
+
+        $slider = Slider::findOrFail($id);
+
+        $bannerPath = $this->updateImage($request, 'banner', 'uploads', $slider->banner);
+
+        $slider->update([
+            'banner' => empty(!$bannerPath) ? $bannerPath : $slider->banner,
+            'type' => $request->input('type'),
+            'title' => $request->input('title'),
+            'starting_price' => $request->input('starting_price'),
+            'btn_url' => $request->input('btn_url'),
+            'serial' => $request->input('serial'),
+            'status' => $request->input('status'),
+        ]);
+
+        toastr()->success('Slider was successfully updated!');
+
+        return redirect()->action([self::class,'index']);
     }
 
     /**
@@ -97,6 +126,10 @@ class SliderController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $slider = Slider::findOrFail($id);
+        $this->deleteImage($slider->banner);
+        $slider->delete();
+
+        return response(['status' => 'success', 'message' => 'Deleted Successfully!']);
     }
 }
