@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\DataTables\CategoryDataTable;
+use App\Models\SubCategory;
 
 class CategoryController extends Controller
 {
@@ -47,7 +48,7 @@ class CategoryController extends Controller
 
         toastr()->success('Category was successfully stored!');
 
-        return redirect()->action([self::class,'index']);
+        return redirect()->action([self::class, 'index']);
     }
 
     /**
@@ -65,7 +66,7 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        return view('admin.category.edit',compact('category'));
+        return view('admin.category.edit', compact('category'));
     }
 
     /**
@@ -75,7 +76,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'icon' => 'required|not_in:empty',
-            'name' => 'required|max:200|unique:categories,name,'.$id,
+            'name' => 'required|max:200|unique:categories,name,' . $id,
             'status' => 'required',
         ]);
 
@@ -90,7 +91,7 @@ class CategoryController extends Controller
 
         toastr()->success('Category was successfully Updated!');
 
-        return redirect()->action([self::class,'index']);
+        return redirect()->action([self::class, 'index']);
     }
 
     /**
@@ -100,12 +101,20 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
+        $subCategory = SubCategory::where('category_id', $category->id)->count();
+
+        if ($subCategory > 0) {
+
+            return response(['status' => 'error', 'message' => 'This items contain sub items for delete you have to delete the sub items first!']);
+        }
+
         $category->delete();
 
         return response(['status' => 'success', 'message' => 'Deleted Successfully!']);
     }
 
-    public function changeStatus(Request $request) {
+    public function changeStatus(Request $request)
+    {
 
         $category = Category::findOrFail($request->id);
         $category->status = $request->status == 'true' ? 1 : 0;
