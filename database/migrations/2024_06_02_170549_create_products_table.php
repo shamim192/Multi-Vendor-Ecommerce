@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('thumb_image');
             $table->integer('vendor_id');
             $table->integer('category_id');
-            $table->integer('sub_category_id')->default(0);
-            $table->integer('child_category_id')->default(0);
+            $table->integer('sub_category_id')->nullable();
+            $table->integer('child_category_id')->nullable();
             $table->integer('brand_id');
             $table->integer('qty');
             $table->text('short_description');
@@ -28,15 +28,13 @@ return new class extends Migration
             $table->string('sku')->nullable();
             $table->double('price');
             $table->double('offer_price')->nullable();
-            $table->date('offer_start_price')->nullable();
-            $table->date('offer_end_price')->nullable();
-            $table->boolean('is_top')->nullable();
-            $table->boolean('is_best')->nullable();
-            $table->boolean('is_featured')->nullable();
+            $table->date('offer_start_date')->nullable();
+            $table->date('offer_end_date')->nullable();
+            $table->string('product_type')->nullable();
             $table->boolean('status');
             $table->integer('is_approved')->default(0);
             $table->string('seo_title')->nullable();
-            $table->text('seo_descritpion')->nullable();
+            $table->text('seo_description')->nullable();
             $table->timestamps();
         });
     }

@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Traits\ImageUploadTrait;
 use App\DataTables\ProductDataTable;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Brand;
+use App\Models\ChildCategory;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -20,13 +25,15 @@ class ProductController extends Controller
         return $dataTable->render('admin.product.index');
     }
 
-   
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('admin.product.create');
+        $categories = Category::all();
+        $brands = Brand::all();
+        return view('admin.product.create', compact('categories','brands'));
     }
 
     /**
@@ -35,19 +42,43 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'logo' => 'required|image|max:2000',
+            'thumb_image' => 'required|image|max:2000',
             'name' => 'required|max:200',
-            'is_featured' => 'required',
+            'category_id' => 'required',
+            'brand_id' => 'required',
+            'price' => 'required',
+            'qty' => 'required',
+            'short_description' => 'required|max:600',
+            'long_description' => 'required',
+            'seo_titile' => 'nullable|max:200',
+            'seo_description' => 'nullable|max:250',
             'status' => 'required',
         ]);
 
-        $logoPath = $this->uploadImage($request, 'logo', 'uploads');
+        $imagePath = $this->uploadImage($request, 'thumb_image', 'uploads');
 
         Product::create([
-            'logo' => $logoPath,
+            'thumb_image' => $imagePath,
             'name' => $request->input('name'),
             'slug' => Str::slug($request->name),
-            'is_featured' => $request->input('is_featured'),
+            'vendor_id' => Auth::user()->vendor->id,
+            'category_id' => $request->input('category_id'),
+            'sub_category_id' => $request->input('sub_category_id'),
+            'child_category_id' => $request->input('child_category_id'),
+            'brand_id' => $request->input('brand_id'),
+            'qty' => $request->input('qty'),
+            'short_description' => $request->input('short_description'),
+            'long_description' => $request->input('long_description'),
+            'video_link' => $request->input('video_link'),
+            'sku' => $request->input('sku'),
+            'price' => $request->input('price'),
+            'offer_price' => $request->input('offer_price'),
+            'offer_start_date' => $request->input('offer_start_date'),
+            'offer_end_date' => $request->input('offer_end_date'),
+            'product_type' => $request->input('product_type'),
+            'seo_title' => $request->input('seo_title'),
+            'seo_description' => $request->input('seo_description'),
+            'is_approved' => 1,
             'status' => $request->input('status'),
         ]);
 
@@ -70,8 +101,12 @@ class ProductController extends Controller
     public function edit(string $id)
     {
         $product = Product::findOrFail($id);
+        $subCategories = SubCategory::where('category_id', $product->category_id)->get();
+        $childCategories = ChildCategory::where('sub_category_id', $product->sub_category_id)->get();
+        $categories = Category::all();
+        $brands = Brand::all();
 
-        return view('admin.product.edit', compact('product'));
+        return view('admin.product.edit', compact('product','categories','brands','subCategories','childCategories'));
     }
 
     /**
@@ -80,21 +115,45 @@ class ProductController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'logo' => 'nullable|image|max:2000',
+            'thumb_image' => 'nullable|image|max:2000',
             'name' => 'required|max:200',
-            'is_featured' => 'required',
+            'category_id' => 'required',
+            'brand_id' => 'required',
+            'price' => 'required',
+            'qty' => 'required',
+            'short_description' => 'required|max:600',
+            'long_description' => 'required',
+            'seo_titile' => 'nullable|max:200',
+            'seo_description' => 'nullable|max:250',
             'status' => 'required',
         ]);
 
         $prdouct = Product::findOrFail($id);
 
-        $logoPath = $this->updateImage($request, 'logo', 'uploads', $prdouct->logo);
+        $imagePath = $this->updateImage($request, 'thumb_image', 'uploads', $prdouct->thumb_image);
 
         $prdouct->update([
-            'logo' => empty(!$logoPath) ? $logoPath : $prdouct->logo ,
+            'thumb_image' => empty(!$imagePath) ? $imagePath : $prdouct->thumb_image,
             'name' => $request->input('name'),
             'slug' => Str::slug($request->name),
-            'is_featured' => $request->input('is_featured'),
+            'vendor_id' => Auth::user()->vendor->id,
+            'category_id' => $request->input('category_id'),
+            'sub_category_id' => $request->input('sub_category_id'),
+            'child_category_id' => $request->input('child_category_id'),
+            'brand_id' => $request->input('brand_id'),
+            'qty' => $request->input('qty'),
+            'short_description' => $request->input('short_description'),
+            'long_description' => $request->input('long_description'),
+            'video_link' => $request->input('video_link'),
+            'sku' => $request->input('sku'),
+            'price' => $request->input('price'),
+            'offer_price' => $request->input('offer_price'),
+            'offer_start_date' => $request->input('offer_start_date'),
+            'offer_end_date' => $request->input('offer_end_date'),
+            'product_type' => $request->input('product_type'),
+            'seo_title' => $request->input('seo_title'),
+            'seo_description' => $request->input('seo_description'),
+            'is_approved' => 1,
             'status' => $request->input('status'),
         ]);
 
@@ -123,5 +182,17 @@ class ProductController extends Controller
         $product->save();
 
         return response(['message' => 'Status has been updated!']);
+    }
+
+    public function getSubCategories(Request $request)
+    {
+        $subCategories = SubCategory::where('category_id', $request->id)->where('status', 1)->get();
+        return $subCategories;
+    }
+
+    public function getChildCategories(Request $request)
+    {
+        $childCategories = ChildCategory::where('sub_category_id', $request->id)->where('status', 1)->get();
+        return $childCategories;
     }
 }

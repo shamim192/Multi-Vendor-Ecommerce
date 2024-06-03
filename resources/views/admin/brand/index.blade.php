@@ -36,7 +36,7 @@
                let id = $(this).data('id');
 
                $.ajax({
-                url: "{{ route('admin.brand.change-status') }}",
+                url: "{{ route('admin.products.change-status') }}",
                     method: 'PUT',
                     data: {
                         status: isChecked,
