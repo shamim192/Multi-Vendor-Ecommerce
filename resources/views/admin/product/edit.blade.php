@@ -37,7 +37,7 @@
                                 <div class="form-group">
                                     <label>Image</label>
                                     <input type="file" name="thumb_image"
-                                        class="form-control @error('thumb_image') is-invalid @enderror"">
+                                        class="form-control @error('thumb_image') is-invalid @enderror">
                                     @error('thumb_image')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror

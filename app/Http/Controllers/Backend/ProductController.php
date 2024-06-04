@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\SubCategory;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ChildCategory;
+use App\Models\ProductVariant;
 use App\Traits\ImageUploadTrait;
+use App\Models\ProductImageGallery;
 use App\DataTables\ProductDataTable;
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
-use App\Models\ChildCategory;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -168,6 +170,24 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
+
+        /** Delte the main product image */
+        $this->deleteImage($product->thumb_image);
+
+        /** Delete product gallery images */
+        $galleryImages = ProductImageGallery::where('product_id', $product->id)->get();
+        foreach($galleryImages as $image){
+            $this->deleteImage($image->image);
+            $image->delete();
+        }
+
+        /** Delete product variants if exist */
+        $variants = ProductVariant::where('product_id', $product->id)->get();
+
+        foreach($variants as $variant){
+            $variant->productVariantItems()->delete();
+            $variant->delete();
+        }
 
         $product->delete();
 
