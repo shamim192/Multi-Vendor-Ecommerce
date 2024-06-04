@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{{asset('frontend/css/all.min.css')}}">
   <link rel="stylesheet" href="{{asset('frontend/css/bootstrap.min.css')}}">
   <link rel="stylesheet" href="{{asset('frontend/css/select2.min.css')}}">
+  <link rel="stylesheet" href="{{ asset('frontend/css/summernote/summernote-bs4.css') }}">
   <link rel="stylesheet" href="{{asset('frontend/css/slick.css')}}">
   <link rel="stylesheet" href="{{asset('frontend/css/jquery.nice-number.min.css')}}">
   <link rel="stylesheet" href="{{asset('frontend/css/jquery.calendar.css')}}">
@@ -102,7 +103,7 @@
   <!--classycountdown js-->
   <script src="{{asset('frontend/js/jquery.classycountdown.js')}}"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
+  <script src="{{ asset('frontend/js/summernote/summernote-bs4.js') }}"></script>
   <!--main/custom js-->
   <script src="{{asset('frontend/js/main.js')}}"></script>
   
@@ -114,6 +115,11 @@
     @endif
 </script>
 
+<script>
+$('.summernote').summernote({
+  height: 200,
+});
+</script>
 </body>
 
 </html>

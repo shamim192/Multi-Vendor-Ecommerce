@@ -12,6 +12,7 @@ class Vendor extends Model
     protected $fillable = [
         'banner',
         'phone',
+        'shop_name',
         'email',
         'address',
         'description',
